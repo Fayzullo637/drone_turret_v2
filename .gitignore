@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Pytest / Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# AI Models & Data
+*.pt
+*.onnx
+*.weights
+*.engine
+# Не игнорируем саму папку models, но игнорируем тяжелые веса внутри:
+models/*.pt
+
+# Logs
+*.log
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arduino/Firmware
+firmware/build/
+*.hex
+*.elf
