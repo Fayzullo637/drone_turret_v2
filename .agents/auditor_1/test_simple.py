@@ -1,0 +1,1 @@
+print("DIRECT POWERSHELL WORKS")

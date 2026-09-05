@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DRONE INTERCEPTOR TURRET v2.0 // TACTICAL HUD</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="cyber-theme">
+  <!-- Top Tactical Header Bar -->
+  <header class="hud-header">
+    <div class="header-left">
+      <div class="logo-radar">
+        <span class="radar-sweep"></span>
+        <span class="radar-dot"></span>
+      </div>
+      <div class="brand-titles">
+        <h1 class="hud-title">DRONE TURRET <span class="version-tag">v2.0</span></h1>
+        <p class="hud-subtitle">CYBER-PHYSICAL AI BALLISTIC INTERCEPTOR SYSTEM</p>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="status-pill status-searching" id="global-lock-pill">
+        <span class="pill-indicator"></span>
+        <span class="pill-label" id="lock-status-text">SCANNING AIRSPACE</span>
+      </div>
+      <div class="status-pill status-sim" id="hardware-mode-pill">
+        <span class="pill-label" id="hardware-mode-text">SIMULATION MODE</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="header-metric">
+        <span class="metric-label">SYS FPS</span>
+        <span class="metric-val text-cyan" id="header-fps">--</span>
+      </div>
+      <div class="header-metric">
+        <span class="metric-label">UTC TIME</span>
+        <span class="metric-val text-white" id="header-time">00:00:00</span>
+      </div>
+      <button class="audio-toggle-btn" id="btn-sound-toggle" title="Toggle Tactical Audio Feedback">
+        <span id="sound-icon">🔊</span> AUDIO
+      </button>
+    </div>
+  </header>
+
+  <!-- Main HUD Layout Grid -->
+  <main class="hud-grid">
+    
+    <!-- LEFT SIDEBAR: Kinematics & Ballistic Telemetry -->
+    <aside class="sidebar telemetry-sidebar">
+      <div class="panel-card">
+        <div class="card-header">
+          <span class="card-tag">TEL-01</span>
+          <h3>TARGET KINEMATICS</h3>
+        </div>
+        <div class="card-body">
+          <div class="telemetry-gauge">
+            <div class="gauge-header">
+              <span class="gauge-name">VELOCITY</span>
+              <span class="gauge-units">km/h</span>
+            </div>
+            <div class="gauge-value-big" id="val-speed">0.0</div>
+            <div class="gauge-bar-wrapper">
+              <div class="gauge-bar-fill" id="bar-speed" style="width: 0%"></div>
+            </div>
+            <div class="gauge-sub">MACH <span id="val-mach">0.00</span> | <span id="val-speed-mps">0.0</span> m/s</div>
+          </div>
+
+          <div class="telemetry-gauge">
+            <div class="gauge-header">
+              <span class="gauge-name">SLANT RANGE</span>
+              <span class="gauge-units">METERS</span>
+            </div>
+            <div class="gauge-value-big text-cyan" id="val-range">--</div>
+            <div class="gauge-bar-wrapper">
+              <div class="gauge-bar-fill bg-cyan" id="bar-range" style="width: 0%"></div>
+            </div>
+            <div class="gauge-sub">SOURCE: <span class="badge-sub" id="val-range-src">OPTICAL</span></div>
+          </div>
+
+          <div class="grid-2col">
+            <div class="mini-stat">
+              <span class="mini-label">TARGET ID</span>
+              <span class="mini-val text-yellow" id="val-track-id">NONE</span>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-label">CONFIDENCE</span>
+              <span class="mini-val text-green" id="val-conf">--%</span>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-label">CLASS</span>
+              <span class="mini-val" id="val-class">--</span>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-label">TRACK STATE</span>
+              <span class="mini-val text-cyan" id="val-filter-state">IDLE</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="card-header">
+          <span class="card-tag">TEL-02</span>
+          <h3>BALLISTIC LEAD SOLUTION</h3>
+        </div>
+        <div class="card-body">
+          <div class="stat-row">
+            <span class="stat-name">TIME TO INTERCEPT (T<sub>int</sub>)</span>
+            <span class="stat-val text-orange" id="val-tint">-- s</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">GRAVITY + DRAG DROP</span>
+            <span class="stat-val" id="val-drop">-- m</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">LEAD PAN AZIMUTH</span>
+            <span class="stat-val text-cyan" id="val-lead-pan">90.0°</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-name">LEAD TILT ELEVATION</span>
+            <span class="stat-val text-cyan" id="val-lead-tilt">90.0°</span>
+          </div>
+
+          <!-- Gimbal Attitude Horizon Display -->
+          <div class="gimbal-display">
+            <div class="gimbal-axis">
+              <div class="axis-label">PAN SERVO</div>
+              <div class="axis-meter">
+                <div class="meter-needle" id="needle-pan" style="left: 50%"></div>
+                <div class="meter-center"></div>
+              </div>
+              <div class="axis-readout" id="readout-pan">90.0°</div>
+            </div>
+            <div class="gimbal-axis">
+              <div class="axis-label">TILT SERVO</div>
+              <div class="axis-meter">
+                <div class="meter-needle" id="needle-tilt" style="left: 50%"></div>
+                <div class="meter-center"></div>
+              </div>
+              <div class="axis-readout" id="readout-tilt">90.0°</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER VIEWPORT: Live Video Stream & HUD -->
+    <section class="viewport-section">
+      <div class="video-container" id="video-frame-container">
+        <!-- Reticle Graphic Overlays -->
+        <div class="hud-corner top-left"></div>
+        <div class="hud-corner top-right"></div>
+        <div class="hud-corner bottom-left"></div>
+        <div class="hud-corner bottom-right"></div>
+
+        <div class="hud-center-brackets">
+          <div class="bracket-v"></div>
+          <div class="bracket-h"></div>
+        </div>
+
+        <img id="live-stream-img" src="/video_feed" alt="Live Tactical HUD Feed" />
+
+        <div class="stream-overlay-bar">
+          <div class="overlay-item">
+            <span class="dot-live"></span> REC // LIVE
+          </div>
+          <div class="overlay-item" id="stream-res-label">640x480 @ 30 FPS</div>
+          <div class="overlay-item" id="stream-model-label">MODEL: yolov8n.pt</div>
+        </div>
+
+        <div class="stream-actions">
+          <button class="icon-btn" id="btn-fullscreen" title="Toggle Fullscreen">⛶</button>
+          <button class="icon-btn" id="btn-snapshot" title="Capture Snapshot">📷</button>
+          <button class="icon-btn" id="btn-reconnect-stream" title="Reconnect Stream">🔄</button>
+        </div>
+      </div>
+
+      <!-- Action Fire Deck Bar -->
+      <div class="fire-deck">
+        <div class="safety-toggle-wrap">
+          <label class="switch">
+            <input type="checkbox" id="safety-arm-switch" />
+            <span class="slider round"></span>
+          </label>
+          <span class="safety-label" id="safety-label-text">SAFETY ARMED: <b class="text-red">LOCKED</b></span>
+        </div>
+
+        <button class="btn-fire btn-disabled" id="btn-fire-solenoid" disabled>
+          <span class="fire-flame">💥</span>
+          <span class="fire-text">FIRE NET LAUNCHER</span>
+        </button>
+
+        <button class="btn-secondary" id="btn-home-turret">
+          <span>🎯</span> HOME GIMBAL (90°, 90°)
+        </button>
+      </div>
+
+      <!-- Event Combat Log Ticker -->
+      <div class="combat-log-card">
+        <div class="log-header">
+          <span>COMBAT & ENGAGEMENT EVENT LOG</span>
+          <button class="btn-clear-log" id="btn-clear-log">CLEAR</button>
+        </div>
+        <div class="log-stream" id="event-log-stream">
+          <div class="log-entry log-sys">[00:00:00] Tactical HUD Initialized. Airspace monitoring active.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT SIDEBAR: Control Deck & Tuning -->
+    <aside class="sidebar controls-sidebar">
+      
+      <!-- Device & Model Selection -->
+      <div class="panel-card">
+        <div class="card-header">
+          <span class="card-tag">CTL-01</span>
+          <h3>DEVICES & MODEL</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="select-camera">CAMERA SOURCE</label>
+            <div class="input-with-action">
+              <select id="select-camera" class="cyber-select">
+                <option value="0">Camera 0 (Default)</option>
+                <option value="synthetic">Synthetic Simulator</option>
+              </select>
+              <button class="btn-small" id="btn-refresh-cameras" title="Scan Cameras">🔍</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="select-model">NEURAL NET WEIGHTS</label>
+            <select id="select-model" class="cyber-select">
+              <option value="drone_best.pt">drone_best.pt (Anti-Drone Specialist)</option>
+              <option value="yolov8n.pt">yolov8n.pt (COCO General)</option>
+              <option value="yolov8_drone.pt">yolov8_drone.pt (Drone v1)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="select-drone-preset">DRONE SIZE PRESET (OPTICAL RANGE)</label>
+            <select id="select-drone-preset" class="cyber-select">
+              <option value="0.35">DJI Mavic 3 (0.35m)</option>
+              <option value="0.22">FPV Quadcopter (0.22m)</option>
+              <option value="2.50">Shahed-136 Kamikaze (2.50m)</option>
+              <option value="20.0">MQ-9 Reaper (20.0m)</option>
+              <option value="custom">Custom Size...</option>
+            </select>
+          </div>
+
+          <div class="form-group toggle-row">
+            <label>SIMULATION MODE (NO HARDWARE)</label>
+            <input type="checkbox" id="check-sim-mode" checked />
+          </div>
+
+          <div class="form-group">
+            <label for="select-arduino-port">ARDUINO SERVO COM PORT</label>
+            <div class="input-with-action">
+              <select id="select-arduino-port" class="cyber-select">
+                <option value="SIMULATION">SIMULATION (Virtual Loopback)</option>
+              </select>
+              <button class="btn-small" id="btn-refresh-ports" title="Scan COM Ports">🔍</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Parameter Sliders -->
+      <div class="panel-card">
+        <div class="card-header">
+          <span class="card-tag">CTL-02</span>
+          <h3>BALLISTICS & TRACKING TUNING</h3>
+        </div>
+        <div class="card-body">
+          <!-- Confidence Threshold -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>CONFIDENCE THRESHOLD</span>
+              <span class="slider-val" id="val-slider-conf">50%</span>
+            </div>
+            <input type="range" min="0.05" max="0.95" step="0.05" value="0.50" id="slider-conf" />
+          </div>
+
+          <!-- Muzzle Velocity -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>MUZZLE VELOCITY (v<sub>0</sub>)</span>
+              <span class="slider-val" id="val-slider-v0">80 m/s</span>
+            </div>
+            <input type="range" min="30.0" max="150.0" step="1.0" value="80.0" id="slider-v0" />
+          </div>
+
+          <!-- Net Projectile Mass -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>PROJECTILE MASS (m)</span>
+              <span class="slider-val" id="val-slider-mass">0.60 kg</span>
+            </div>
+            <input type="range" min="0.10" max="2.00" step="0.05" value="0.60" id="slider-mass" />
+          </div>
+
+          <!-- Drag Coefficient -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>EXPANDED DRAG (C<sub>d</sub>)</span>
+              <span class="slider-val" id="val-slider-cd">1.20</span>
+            </div>
+            <input type="range" min="0.50" max="2.20" step="0.05" value="1.20" id="slider-cd" />
+          </div>
+
+          <!-- PID Kp -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>PID GAIN (K<sub>p</sub>)</span>
+              <span class="slider-val" id="val-slider-kp">0.12</span>
+            </div>
+            <input type="range" min="0.01" max="0.50" step="0.01" value="0.12" id="slider-kp" />
+          </div>
+
+          <!-- PID Kd -->
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>PID DERIVATIVE (K<sub>d</sub>)</span>
+              <span class="slider-val" id="val-slider-kd">0.03</span>
+            </div>
+            <input type="range" min="0.00" max="0.20" step="0.005" value="0.03" id="slider-kd" />
+          </div>
+
+          <div class="card-footer-btns">
+            <button class="btn-primary" id="btn-save-params">APPLY PARAMETERS</button>
+            <button class="btn-secondary" id="btn-reset-params">RESET DEFAULTS</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
